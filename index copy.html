@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>Welcome to 24 Holland Road</title>
+
+    <link rel="apple-touch-icon" sizes="120x120" href="/ICO/ios/120.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/ICO/ios/152.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/ICO/ios/167.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/ICO/ios/180.png">
+
+    <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+    <link rel="icon" type="image/png" href="favicon.ico" />
+    <link rel="icon" sizes="16x16" href="favicon-16x16.png">
+    <link rel="icon" sizes="32x32" href="favicon-32x32.png">
+    
+    <link rel="manifest" href="site.webmanifest" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" integrity="sha256-rTpdO0HXBCNpreAHcu6tB2Ppg515Vo+5GtYSsnNLz+8=" crossorigin="anonymous">
+    <link rel="stylesheet" href="./css/dark-there.css">
+    <script src="https://kit.fontawesome.com/df0a61cf3d.js" crossorigin="anonymous"></script>
+ 
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                //console.log('App is loader');
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(() => {
+                        //console.log("Concierge service worker registerd");
+                    })
+            })
+        }
+    </script>
+
+    <style>
+        main {
+            display: flex;
+            flex-direction:row;
+        }
+
+        .month-year {
+            display: flex;
+
+        }
+
+        .cell {
+            width: calc(100vw / 9);
+            height: calc(100vw / 9);
+            padding: 10px;
+            border: 1px solid darkgray;
+            margin-bottom: 1em;
+            opacity: 0.25;
+        }
+
+        .day-of-week {
+            height: calc(100vw / 20);
+            border: 0px solid darkgray;
+            opacity: 1;
+        }
+
+        .is-month {
+            opacity: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .is-today {
+            background-color: #272727;
+        }
+
+        .tag:not(body).is-paperwaste{    
+            background-color: #660000;
+            color: #EADDCA;
+        }
+
+        .tag:not(body).is-plasticwaste{    
+            background-color: #006600;
+            color: #EADDCA;
+        }
+
+        .tag:not(body).is-gardenwaste{    
+            background-color: #6F4E37;
+            color: #EADDCA;
+        }
+        
+        .tag:not(body).is-generalwaste{    
+            background-color: #404040;
+            color: #EADDCA;
+        }
+        
+        .tag:not(body).is-foodwaste{    
+            background-color: #000066;
+            color: #EADDCA;
+        }
+
+        .tag:not(body){
+            margin: 5px;
+        }
+
+    </style>
+</head>
+
+
+<body class="ml-5 mr-5">
+    <main class="m-0 p-0">
+        <div id="month-year" class="is-flex is-justify-content-center is-align-content-center is-align-items-center"></div>
+        <div id="calendar" class="columns is-gapless is-centered is-multiline is-mobile p-0 m-5">
+            <div class="column"><div class="cell day-of-week"><p class="title has-text-centered">Mon</p></div></div>
+            <div class="column"><div class="cell day-of-week"><p class="title has-text-centered">Tues</p></div></div>
+            <div class="column"><div class="cell day-of-week"><p class="title has-text-centered">Wed</p></div></div>
+            <div class="column"><div class="cell day-of-week"><p class="title has-text-centered">Thurs</p></div></div>
+            <div class="column"><div class="cell day-of-week"><p class="title has-text-centered">Fri</p></div></div>
+            <div class="column"><div class="cell day-of-week"><p class="title has-text-centered">Sat</p></div></div>
+            <div class="column"><div class="cell day-of-week"><p class="title has-text-centered">Sun</p></div></div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js" integrity="sha256-Nn+JGDrq3PuTxcDfJmmI0Srj5LpfOFlKqEiPwQK7y40=" crossorigin="anonymous"></script>
+    <script src="./js/pulltorefresh.js"></script>
+    <script>
+
+        let DateTime = luxon.DateTime;
+
+        let paperWaste = `<span>Paper Box</span>`;
+        let plasticWaste = '<span>Plastic Box</span>';
+        let generalWaste = '<span>Wheelie Bin</span>';
+        let foodWaste = '<span>Food Waste</span>';
+        let gardenWaste = '<span>Garden Bins</span>';
+
+        var gardenDays = [  '2023-03-09', '2023-03-23', '2023-04-06', '2023-04-20', ];
+
+        var foodDays = ['2023-03-07',
+                        '2023-03-14',
+                        '2023-03-21',
+                        '2023-03-28',
+                        '2023-04-04',
+                        '2023-04-11',
+                        '2023-04-18',
+                        '2023-04-25',
+        ];
+
+        var paperDays = ['2023-03-07',
+                        '2023-03-21',
+                        '2023-04-04',
+                        '2023-04-18',
+        ];
+
+        var plasticDays = ['2023-03-14',
+                        '2023-03-28',
+                        '2023-04-11',
+                        '2023-04-25',
+        ];
+
+        $(function(){
+
+            let startDate = DateTime.now().startOf('month');
+            let todaysDate = DateTime.now();
+            let endDate = DateTime.now().endOf('month');
+
+            let startDayOfWeek = DateTime.now().weekday;
+
+            let currDate = startDate.minus({days: (4 - startDayOfWeek)});
+
+            let currMonthYear = (todaysDate.monthLong + " " + todaysDate.year).toUpperCase();
+            let currDisplayMonth = "";
+            for (let i = 0; i < currMonthYear.length; i++) {
+                currDisplayMonth += currMonthYear.charAt(i) + '<br/>';
+            }
+
+            $('#month-year').append(
+                `<h1 class="title has-text-centered">` + currDisplayMonth + `</h1>`
+            );
+
+            while(currDate < endDate){
+
+                for(day = 0; day <= 6; day++)
+                {
+
+                    let addedClasses = "";
+                    
+                    if (currDate.month == startDate.month){
+                        addedClasses += " is-month";
+                    }
+
+                    if (currDate.month == todaysDate.month && currDate.day == todaysDate.day){
+                        addedClasses += " is-today";
+                    }
+
+                    let addTags = "";
+
+                    addTags += isBinDay(currDate, plasticDays, plasticWaste);
+                    addTags += isBinDay(currDate, paperDays, paperWaste);
+                    addTags += isBinDay(currDate, plasticDays, generalWaste);
+                    addTags += isBinDay(currDate, foodDays, foodWaste);
+                    addTags += isBinDay(currDate, gardenDays, gardenWaste);
+
+                    $('#calendar').append(
+                        `<div class="column">
+                            <div id="` + currDate.toISODate() + `" class="cell` + addedClasses + `">
+                                <span>` + currDate.day + `</span> 
+                                ` + addTags + `
+                            </div>
+                        </div>`
+                    );
+
+                    currDate = currDate.plus({days: 1});
+
+                }
+            }
+
+        });
+
+        PullToRefresh.init({
+            mainElement: 'main', // above which element?
+            onRefresh() {
+                window.location.reload();
+            }
+        });
+
+        function updateTime() {
+            window.location.reload();
+        }
+
+        setInterval(updateTime, ((1000 * 60) * 10));
+        
+        function isBinDay(currDate, binDays, binType){
+            
+            for (let binDay of binDays) {
+                let gd = DateTime.fromISO(binDay).minus({days: 1});
+                if (currDate.day == gd.day && currDate.month == gd.month){
+                    return binType;
+                }
+            }
+
+            return '';
+
+        }
+
+</script>
+
+</body>
+</html>
